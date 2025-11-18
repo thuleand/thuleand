@@ -4,75 +4,88 @@ import re
 import os
 
 TOKEN = os.getenv("GH_TOKEN")
-
-headers = {"Authorization": f"Bearer {TOKEN}"}
 USER = "thuleand"
 
+headers = {"Authorization": f"Bearer {TOKEN}"}
+
+
 def run_query(query):
-    response = requests.post(
+    resp = requests.post(
         "https://api.github.com/graphql",
         json={"query": query},
-        headers=headers
+        headers=headers,
     )
-    data = response.json()
+    data = resp.json()
+    print("RAW:", data)  # debug no log do Actions
     if "errors" in data:
         print("Erro:", data["errors"])
         raise SystemExit(1)
-    return data["data"]["user"]["contributionsCollection"]
+    return data["data"]["user"]["contributionsCollection"]["contributionCalendar"]
+
+
+def somar_contribuicoes(calendar):
+    total = 0
+    for week in calendar["weeks"]:
+        for day in week["contributionDays"]:
+            total += day["contributionCount"]
+    return total
 
 
 # ============================
-# 1) Ano atual (Jan → Dez)
+# 1) Ano atual (1/jan até hoje)
 # ============================
 
-year = datetime.datetime.now().year
-start_year = f"{year}-01-01T00:00:00Z"
-end_year = f"{year}-12-31T23:59:59Z"
+today = datetime.datetime.utcnow()
+year = today.year
+start_year = datetime.datetime(year, 1, 1)
+end_year = today  # até agora
 
 query_year = f"""
 query {{
   user(login: "{USER}") {{
-    contributionsCollection(from: "{start_year}", to: "{end_year}") {{
-      totalCommitContributions
-      totalIssueContributions
-      totalPullRequestContributions
-      totalPullRequestReviewContributions
+    contributionsCollection(from: "{start_year.isoformat()}Z", to: "{end_year.isoformat()}Z") {{
       contributionCalendar {{
-        totalContributions
+        weeks {{
+          contributionDays {{
+            date
+            contributionCount
+          }}
+        }}
       }}
     }}
   }}
 }}
 """
 
-data_year = run_query(query_year)
-total_year = data_year["contributionCalendar"]["totalContributions"]
+calendar_year = run_query(query_year)
+total_year = somar_contribuicoes(calendar_year)
 
 
 # ============================
 # 2) Últimos 12 meses (rolling)
 # ============================
 
-today = datetime.datetime.utcnow()
-last_year_date = today - datetime.timedelta(days=365)
-
-start_rolling = last_year_date.strftime("%Y-%m-%dZ")
-end_rolling = today.strftime("%Y-%m-%dZ")
+inicio_rolling = today - datetime.timedelta(days=365)
 
 query_rolling = f"""
 query {{
   user(login: "{USER}") {{
-    contributionsCollection(from: "{start_rolling}", to: "{end_rolling}") {{
+    contributionsCollection(from: "{inicio_rolling.isoformat()}Z", to: "{today.isoformat()}Z") {{
       contributionCalendar {{
-        totalContributions
+        weeks {{
+          contributionDays {{
+            date
+            contributionCount
+          }}
+        }}
       }}
     }}
   }}
 }}
 """
 
-data_rolling = run_query(query_rolling)
-total_rolling = data_rolling["contributionCalendar"]["totalContributions"]
+calendar_rolling = run_query(query_rolling)
+total_rolling = somar_contribuicoes(calendar_rolling)
 
 
 # ============================
@@ -84,7 +97,7 @@ with open("README.md", "r", encoding="utf8") as f:
 
 new_block = (
     f"<!--STATS-->\n"
-    f"**Contribuições em {year}:** {total_year}  \n"
+    f"**Contribuições em {year} (soma de todos os dias do ano):** {total_year}  \n"
     f"**Contribuições nos últimos 12 meses:** {total_rolling}  \n"
     f"<!--STATS-->"
 )
