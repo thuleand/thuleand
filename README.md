@@ -47,11 +47,8 @@ Gosto de estudar:
 ## 📊 Estatísticas Reais (incluindo repositórios privados)
 
 <!--STATS-->
-**Contribuições totais em 2025 (igual ao gráfico verde):** 12  
-**Commits:** 11  
-**PRs:** 0  
-**Issues:** 0  
-**Reviews:** 0  
+**Contribuições em 2025:** 13  
+**Contribuições nos últimos 12 meses:** 13  
 <!--STATS-->
 
 
