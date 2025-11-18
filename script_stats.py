@@ -6,21 +6,37 @@ import os
 TOKEN = os.getenv("GH_TOKEN")
 
 headers = {"Authorization": f"Bearer {TOKEN}"}
+USER = "thuleand"
 
-# Ano atual
+def run_query(query):
+    response = requests.post(
+        "https://api.github.com/graphql",
+        json={"query": query},
+        headers=headers
+    )
+    data = response.json()
+    if "errors" in data:
+        print("Erro:", data["errors"])
+        raise SystemExit(1)
+    return data["data"]["user"]["contributionsCollection"]
+
+
+# ============================
+# 1) Ano atual (Jan → Dez)
+# ============================
+
 year = datetime.datetime.now().year
-start = f"{year}-01-01T00:00:00Z"
-end = f"{year}-12-31T23:59:59Z"
+start_year = f"{year}-01-01T00:00:00Z"
+end_year = f"{year}-12-31T23:59:59Z"
 
-query = f"""
+query_year = f"""
 query {{
-  user(login: "thuleand") {{
-    contributionsCollection(from: "{start}", to: "{end}") {{
+  user(login: "{USER}") {{
+    contributionsCollection(from: "{start_year}", to: "{end_year}") {{
       totalCommitContributions
       totalIssueContributions
       totalPullRequestContributions
       totalPullRequestReviewContributions
-      
       contributionCalendar {{
         totalContributions
       }}
@@ -29,37 +45,47 @@ query {{
 }}
 """
 
-response = requests.post(
-    "https://api.github.com/graphql",
-    json={"query": query},
-    headers=headers
-)
+data_year = run_query(query_year)
+total_year = data_year["contributionCalendar"]["totalContributions"]
 
-data = response.json()
-print("RAW:", data)  # debug
 
-if "errors" in data:
-    print("Erro:", data["errors"])
-    raise SystemExit(1)
+# ============================
+# 2) Últimos 12 meses (rolling)
+# ============================
 
-col = data["data"]["user"]["contributionsCollection"]
+today = datetime.datetime.utcnow()
+last_year_date = today - datetime.timedelta(days=365)
 
-commits = col["totalCommitContributions"]
-issues = col["totalIssueContributions"]
-prs = col["totalPullRequestContributions"]
-reviews = col["totalPullRequestReviewContributions"]
-total = col["contributionCalendar"]["totalContributions"]
+start_rolling = last_year_date.strftime("%Y-%m-%dT%H:%M:%SZ")
+end_rolling = today.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+query_rolling = f"""
+query {{
+  user(login: "{USER}") {{
+    contributionsCollection(from: "{start_rolling}", to: "{end_rolling}") {{
+      contributionCalendar {{
+        totalContributions
+      }}
+    }}
+  }}
+}}
+"""
+
+data_rolling = run_query(query_rolling)
+total_rolling = data_rolling["contributionCalendar"]["totalContributions"]
+
+
+# ============================
+# 3) Atualizar README
+# ============================
 
 with open("README.md", "r", encoding="utf8") as f:
     readme = f.read()
 
 new_block = (
     f"<!--STATS-->\n"
-    f"**Contribuições totais em {year} (igual ao gráfico verde):** {total}  \n"
-    f"**Commits:** {commits}  \n"
-    f"**PRs:** {prs}  \n"
-    f"**Issues:** {issues}  \n"
-    f"**Reviews:** {reviews}  \n"
+    f"**Contribuições em {year}:** {total_year}  \n"
+    f"**Contribuições nos últimos 12 meses:** {total_rolling}  \n"
     f"<!--STATS-->"
 )
 
