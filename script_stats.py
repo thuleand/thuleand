@@ -112,3 +112,34 @@ with open("README.md", "w", encoding="utf8") as f:
     f.write(readme)
 
 print("Stats atualizadas!")
+
+
+# ============================
+# 4) DEBUG (opcional)
+# ============================
+
+DEBUG = True
+
+if DEBUG:
+    print("\n===== RAW YEAR CALENDAR =====")
+    print(calendar_year)
+
+    print("\n===== RAW LAST 12 MONTHS CALENDAR =====")
+    print(calendar_rolling)
+
+    print("\n===== TOTAL YEAR (somado) =====")
+    print(total_year)
+
+    print("\n===== TOTAL ROLLING (somado) =====")
+    print(total_rolling)
+
+    print("\n===== SAMPLE OF FIRST 10 DAYS (YEAR) =====")
+    sample_days = []
+    for week in calendar_year["weeks"]:
+        for day in week["contributionDays"]:
+            sample_days.append(day)
+            if len(sample_days) >= 10:
+                break
+        if len(sample_days) >= 10:
+            break
+    print(sample_days)
