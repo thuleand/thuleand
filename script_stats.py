@@ -12,16 +12,15 @@ year = datetime.datetime.now().year
 start = f"{year}-01-01T00:00:00Z"
 end = f"{year}-12-31T23:59:59Z"
 
-# Agora pedimos contribuições privadas também
 query = f"""
 query {{
   user(login: "thuleand") {{
-    contributionsCollection(from: "{start}", to: "{end}", includePrivateContributions: true) {{
+    contributionsCollection(from: "{start}", to: "{end}") {{
       totalCommitContributions
-      totalPullRequestContributions
       totalIssueContributions
+      totalPullRequestContributions
       totalPullRequestReviewContributions
-      restrictedContributionsCount
+      
       contributionCalendar {{
         totalContributions
       }}
@@ -37,32 +36,30 @@ response = requests.post(
 )
 
 data = response.json()
-print("RAW:", data)  # debug se quiser ver algo no log
+print("RAW:", data)  # debug
 
 if "errors" in data:
     print("Erro:", data["errors"])
     raise SystemExit(1)
 
-stats = data["data"]["user"]["contributionsCollection"]
+col = data["data"]["user"]["contributionsCollection"]
 
-total_commits = stats["totalCommitContributions"]
-total_prs = stats["totalPullRequestContributions"]
-total_issues = stats["totalIssueContributions"]
-total_reviews = stats["totalPullRequestReviewContributions"]
-restricted = stats["restrictedContributionsCount"]
-calendar_total = stats["contributionCalendar"]["totalContributions"]
+commits = col["totalCommitContributions"]
+issues = col["totalIssueContributions"]
+prs = col["totalPullRequestContributions"]
+reviews = col["totalPullRequestReviewContributions"]
+total = col["contributionCalendar"]["totalContributions"]
 
 with open("README.md", "r", encoding="utf8") as f:
     readme = f.read()
 
 new_block = (
     f"<!--STATS-->\n"
-    f"**Contribuições totais em {year} (mesmo número do gráfico verde):** {calendar_total}  \n"
-    f"**Commits em {year} (públicos + privados):** {total_commits}  \n"
-    f"**PRs em {year}:** {total_prs}  \n"
-    f"**Issues em {year}:** {total_issues}  \n"
-    f"**Code reviews em {year}:** {total_reviews}  \n"
-    f"**Contribuições privadas (não detalhadas):** {restricted}\n"
+    f"**Contribuições totais em {year} (igual ao gráfico verde):** {total}  \n"
+    f"**Commits:** {commits}  \n"
+    f"**PRs:** {prs}  \n"
+    f"**Issues:** {issues}  \n"
+    f"**Reviews:** {reviews}  \n"
     f"<!--STATS-->"
 )
 
