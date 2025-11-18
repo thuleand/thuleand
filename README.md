@@ -47,8 +47,8 @@ Gosto de estudar:
 ## 📊 Estatísticas Reais (incluindo repositórios privados)
 
 <!--STATS-->
-**Contribuições em 2025:** 13  
-**Contribuições nos últimos 12 meses:** 13  
+**Contribuições em 2025 (soma de todos os dias do ano):** 15  
+**Contribuições nos últimos 12 meses:** 15  
 <!--STATS-->
 
 
