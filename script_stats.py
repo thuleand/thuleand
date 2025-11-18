@@ -56,8 +56,8 @@ total_year = data_year["contributionCalendar"]["totalContributions"]
 today = datetime.datetime.utcnow()
 last_year_date = today - datetime.timedelta(days=365)
 
-start_rolling = last_year_date.strftime("%Y-%m-%dT%H:%M:%SZ")
-end_rolling = today.strftime("%Y-%m-%dT%H:%M:%SZ")
+start_rolling = last_year_date.strftime("%Y-%m-%dZ")
+end_rolling = today.strftime("%Y-%m-%dZ")
 
 query_rolling = f"""
 query {{
