@@ -1,35 +1,65 @@
-name: Atualizar Stats Reais
+import requests
+import datetime
+import re
+import os
 
-on:
-  schedule:
-    - cron: "0 3 * * *"   # roda todo dia às 03:00
-  workflow_dispatch:       # permite rodar manualmente
+TOKEN = os.getenv("GH_TOKEN")
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+headers = {"Authorization": f"Bearer {TOKEN}"}
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.GH_TOKEN }}
+# Ano atual
+year = datetime.datetime.now().year
+start = f"{year}-01-01T00:00:00Z"
+end = f"{year}-12-31T23:59:59Z"
 
-      - name: Instalar Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.10"
+query = f"""
+query {{
+  user(login: "thuleand") {{
+    contributionsCollection(from: "{start}", to: "{end}") {{
+      totalCommitContributions
+      totalPullRequestContributions
+      totalIssueContributions
+    }}
+  }}
+}}
+"""
 
-      - name: Instalar dependências
-        run: pip install requests
+response = requests.post(
+    "https://api.github.com/graphql",
+    json={"query": query},
+    headers=headers
+)
 
-      - name: Executar script
-        run: python script_stats.py
+data = response.json()
 
-      - name: Commit e Push
-        run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
-          git add README.md
-          git commit -m "Atualizando stats automáticos" || echo "Nada para atualizar"
-          git push
+if "errors" in data:
+    print("Erro:", data["errors"])
+    exit()
+
+stats = data["data"]["user"]["contributionsCollection"]
+
+total_commits = stats["totalCommitContributions"]
+total_prs = stats["totalPullRequestContributions"]
+total_issues = stats["totalIssueContributions"]
+
+with open("README.md", "r", encoding="utf8") as f:
+    readme = f.read()
+
+new_block = (
+    f"<!--STATS-->\n"
+    f"**Commits em {year}:** {total_commits}  \n"
+    f"**PRs em {year}:** {total_prs}  \n"
+    f"**Issues em {year}:** {total_issues}\n"
+    f"<!--STATS-->"
+)
+
+readme = re.sub(
+    r"<!--STATS-->[\s\S]*<!--STATS-->",
+    new_block,
+    readme
+)
+
+with open("README.md", "w", encoding="utf8") as f:
+    f.write(readme)
+
+print("Stats atualizadas!")
