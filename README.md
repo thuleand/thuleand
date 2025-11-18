@@ -44,6 +44,13 @@ Gosto de estudar:
 ### ⭐ Stats
 ![Stats](https://github-readme-stats.vercel.app/api?username=thuleand&show_icons=true&theme=tokyonight&hide_border=true)
 
+## 📊 Estatísticas Reais (incluindo repositórios privados)
+
+<!--STATS-->
+Carregando dados reais do ano…
+<!--STATS-->
+
+
 ### 🔥 Linguagens mais usadas
 ![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=thuleand&layout=compact&theme=tokyonight&hide_border=true)
 
