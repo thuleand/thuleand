@@ -47,7 +47,9 @@ Gosto de estudar:
 ## 📊 Estatísticas Reais (incluindo repositórios privados)
 
 <!--STATS-->
-Carregando dados reais do ano…
+**Commits em 2025:** 9  
+**PRs em 2025:** 0  
+**Issues em 2025:** 0
 <!--STATS-->
 
 
