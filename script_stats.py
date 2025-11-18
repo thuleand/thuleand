@@ -12,13 +12,19 @@ year = datetime.datetime.now().year
 start = f"{year}-01-01T00:00:00Z"
 end = f"{year}-12-31T23:59:59Z"
 
+# Agora pedimos contribuições privadas também
 query = f"""
 query {{
   user(login: "thuleand") {{
-    contributionsCollection(from: "{start}", to: "{end}") {{
+    contributionsCollection(from: "{start}", to: "{end}", includePrivateContributions: true) {{
       totalCommitContributions
       totalPullRequestContributions
       totalIssueContributions
+      totalPullRequestReviewContributions
+      restrictedContributionsCount
+      contributionCalendar {{
+        totalContributions
+      }}
     }}
   }}
 }}
@@ -31,25 +37,32 @@ response = requests.post(
 )
 
 data = response.json()
+print("RAW:", data)  # debug se quiser ver algo no log
 
 if "errors" in data:
     print("Erro:", data["errors"])
-    exit()
+    raise SystemExit(1)
 
 stats = data["data"]["user"]["contributionsCollection"]
 
 total_commits = stats["totalCommitContributions"]
 total_prs = stats["totalPullRequestContributions"]
 total_issues = stats["totalIssueContributions"]
+total_reviews = stats["totalPullRequestReviewContributions"]
+restricted = stats["restrictedContributionsCount"]
+calendar_total = stats["contributionCalendar"]["totalContributions"]
 
 with open("README.md", "r", encoding="utf8") as f:
     readme = f.read()
 
 new_block = (
     f"<!--STATS-->\n"
-    f"**Commits em {year}:** {total_commits}  \n"
+    f"**Contribuições totais em {year} (mesmo número do gráfico verde):** {calendar_total}  \n"
+    f"**Commits em {year} (públicos + privados):** {total_commits}  \n"
     f"**PRs em {year}:** {total_prs}  \n"
-    f"**Issues em {year}:** {total_issues}\n"
+    f"**Issues em {year}:** {total_issues}  \n"
+    f"**Code reviews em {year}:** {total_reviews}  \n"
+    f"**Contribuições privadas (não detalhadas):** {restricted}\n"
     f"<!--STATS-->"
 )
 
