@@ -35,24 +35,3 @@ Gosto de estudar:
 **SAP EWM**  
 `CDS Views` · `Inbound/Outbound`
 
----
-
-## 📊 Meus Status no GitHub
-
-<div align="center">
-
-### ⭐ Stats
-![Stats](https://github-readme-stats.vercel.app/api?username=thuleand&show_icons=true&theme=tokyonight&hide_border=true)
-
-## 📊 Estatísticas Reais (incluindo repositórios privados)
-
-<!--STATS-->
-**Contribuições em 2025 (soma de todos os dias do ano):** 16  
-**Contribuições nos últimos 12 meses:** 16  
-<!--STATS-->
-
-
-### 🔥 Linguagens mais usadas
-![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=thuleand&layout=compact&theme=tokyonight&hide_border=true)
-
-<
